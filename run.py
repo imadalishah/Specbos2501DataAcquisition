@@ -91,8 +91,7 @@ def plot_spectrum(wavelengths, intensities, filename='spectral_plot.png'):
     plt.figure(figsize=(24, 8))
     plt.plot(wavelengths, intensities, color='blue', linewidth=1)
 
-    # Set x-ticks every 20 units
-    # Start at min(wavelengths), end at max(wavelengths) + buffer if needed
+    # Set x-ticks (Every 20 units)
     start, end = min(wavelengths), max(wavelengths)
     plt.xticks(np.arange(start, end + 1, 20))
 
@@ -107,7 +106,7 @@ def plot_spectrum(wavelengths, intensities, filename='spectral_plot.png'):
 
 
 if __name__ == "__main__":
-    w, i = read_jeti_spectrum('COM8')
+    w, i = read_jeti_spectrum('COM8')    # Check Connected COM Port
     if w and i:
         print(f"\nSuccess! Parsed {len(w)} spectral data points.")
         print(f"Sample data -> Wavelength: {w[0]} nm, Value: {i[0]}")

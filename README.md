@@ -84,6 +84,5 @@ When used as a library, file output is opt-in via `save_csv()` / `plot()`.
 *Sample spectral power distribution captured from a SWIR light source using `standalone_run.py`.*
 
 ## License
-## License
 
 The Python code in this repository is licensed under the [MIT License](LICENSE). This covers the code only — it grants no rights to JETI's proprietary command protocol or hardware, and a JETI instrument is required to use this tool at all.

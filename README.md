@@ -20,7 +20,7 @@ pip install pyserial matplotlib numpy
 1. **Identify your port:** Check your OS Device Manager or terminal to identify your instrument's port (e.g., `COM8` on Windows, or `/dev/ttyUSB0` on Linux/macOS).
 2. **Run the script**, passing your port as a command-line argument:
 ```bash
-   python run.py COM8
+   python standalone_run.py COM8
 ```
    *If no argument is passed, the script defaults to `COM8`.*
 

@@ -23,14 +23,14 @@ pip install pyserial matplotlib numpy
 1. **Configure your Port:** Check your device manager to identify the correct COM port (e.g., `COM8` on Windows, or `/dev/ttyUSB0` on Linux/macOS).
 2. **Update Script:** Update the port string in the `if __name__ == "__main__":` block:
 ```python
-w, i = read_jeti_spectrum('YOUR_PORT_HERE')
+target_port = sys.argv[1] if len(sys.argv) > 1 else 'COM8'
 
 ```
 
 
 3. **Run the script:**
 ```bash
-python your_script_name.py
+python run.py COM8
 
 ```
 

@@ -3,6 +3,7 @@ import csv
 import matplotlib.pyplot as plt
 from datetime import datetime
 import numpy as np
+import sys
 
 def read_jeti_spectrum(port='COM8'):
     # Configure serial port

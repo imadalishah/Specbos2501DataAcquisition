@@ -106,7 +106,12 @@ def plot_spectrum(wavelengths, intensities, filename='spectral_plot.png'):
 
 
 if __name__ == "__main__":
-    w, i = read_jeti_spectrum('COM8')    # Check Connected COM Port
+    
+    target_port = sys.argv[1] if len(sys.argv) > 1 else 'COM8' # My PC used COM8 at time of testing...
+    
+    print(f"Connecting to JETI instrument on port: {target_port}")
+    w, i = read_jeti_spectrum(target_port)
+    
     if w and i:
         print(f"\nSuccess! Parsed {len(w)} spectral data points.")
         print(f"Sample data -> Wavelength: {w[0]} nm, Value: {i[0]}")

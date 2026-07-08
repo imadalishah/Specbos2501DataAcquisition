@@ -1,6 +1,6 @@
 # JETI Spectroradiometer Data Acquisition Script
 
-This script communicate with JETI spectroradiometer (e.g., specbos series) via a serial connection. It triggers a measurement, parses the resulting ASCII data, saves the results to a CSV file, and generates a spectral plot.
+This script communicate with JETI spectroradiometer (e.g., specbos 2501: In our demo) via a serial connection. It triggers a measurement, parses the resulting ASCII data, saves the results to a CSV file, and generates a spectral plot.
 
 ## Prerequisites
 
@@ -20,12 +20,12 @@ pip install pyserial matplotlib numpy
 
 ## Usage
 
-1. **Configure your Port:** Check your device manager to identify the correct COM port (e.g., `COM8` on Windows, or `/dev/ttyUSB0` on Linux/macOS).
-2. **Update Script:** Update the port string in the `if __name__ == "__main__":` block:
-```python
-target_port = sys.argv[1] if len(sys.argv) > 1 else 'COM8'
-
-```
+1. **Identify your Port:** Check your OS Device Manager or terminal to identify your instrument's port (e.g., `COM8` on Windows, or `/dev/ttyUSB0` on Linux/macOS).
+2. **Run the script:** Pass your port directly as a command-line argument:
+   ```bash
+   python run.py COM8
+   ```
+   *If no argument is passed, the script defaults to `COM8`.*
 
 
 3. **Run the script:**
@@ -38,12 +38,17 @@ python run.py COM8
 
 ## Configuration Notes
 
-* **Baudrate:** The script defaults to `115200` (typical for specbos). If you are using a **spectraval 15x1**, change the `baudrate` parameter in `read_jeti_spectrum` to `921600` or check documentation of the respective product.
-* **Timeout:** The script sets a 10-second timeout. If your measurement integration time is very long, you may need to increase the `timeout` parameter in the `serial.Serial` configuration.
+* **Data Format:** The script sends `*meas:light 0 1 2` to trigger an auto-exposed light measurement. The trailing `2` explicitly requests **JETI Format 2** (Tab-delimited ASCII data text rows).
+* **Baudrate:** The script defaults to `115200` (typical for specbos). If you are using a **spectraval 15x1**, update the `baudrate` parameter inside `read_jeti_spectrum()` to `921600`.
+* **Timeout Limits:** A 10-second serial timeout is configured. If your physical target environment is very dark and requires extra long exposure integrations, increase the `timeout` parameter in the `serial.Serial` definition block.
 
 ## Output Files
 
-The script will generate two files in the current working directory, prefixed with the current timestamp:
+Upon a successful handshake and data stream reading, two timestamped files are written to your local working directory:
 
-* `measurement_YYYYMMDD_HHMMSS.csv`: Contains tabular data (Wavelength, Intensity).
-* `spectrum_YYYYMMDD_HHMMSS.png`: A visual plot of the spectral power distribution.
+* `measurement_YYYYMMDD_HHMMSS.csv`: Tabular plain-text data mapping `Wavelength (nm)` against `Intensity`.
+* `spectrum_YYYYMMDD_HHMMSS.png`: A high-resolution spectral power distribution (SPD) line plot with 20nm incremental markers.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) - feel free to use, modify, and distribute it.

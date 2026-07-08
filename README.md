@@ -51,4 +51,4 @@ Upon a successful handshake and data stream reading, two timestamped files are w
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE) - feel free to use, modify, and distribute it.
+This project is licensed under the [MIT License](LICENSE) - feel free to use and modify it.

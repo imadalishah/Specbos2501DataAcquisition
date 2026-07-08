@@ -1,10 +1,21 @@
-# JETI Spectroradiometer Data Acquisition Script
+# JETI Spectroradiometer Data Acquisition
 
-This script communicates with a JETI spectroradiometer (tested on a **specbos 2501**) via a serial connection. It triggers a measurement, parses the resulting ASCII data, saves the results to a CSV file, and generates a spectral plot.
+Tools for communicating with a JETI spectroradiometer (tested on a **specbos 2501**) via a serial connection: triggering a measurement, parsing the resulting ASCII data, and saving results as CSV/plot output.
+
+The repo provides two ways to use this:
+
+* **`jeti_spectro.py`** — an importable Python API (`JetiSpectrometer` class) for use in your own scripts/pipelines.
+* **`standalone_run.py`** — the original self-contained script; no import required, just run it directly.
+* **`run.py`** — a CLI wrapper built on top of `jeti_spectro.py`, functionally equivalent to `standalone_run.py` but using the library internally.
+
+```
+repo/
+├── standalone_run.py     # original self-contained script
+├── run.py                # CLI wrapper using jeti_spectro.py
+└── jeti_spectro.py        # importable API (JetiSpectrometer class)
+```
 
 ## Prerequisites
-
-Ensure you have the following installed:
 
 * Python 3.x
 * `pyserial`
@@ -17,29 +28,53 @@ pip install pyserial matplotlib numpy
 
 ## Usage
 
-1. **Identify your port:** Check your OS Device Manager or terminal to identify your instrument's port (e.g., `COM8` on Windows, or `/dev/ttyUSB0` on Linux/macOS).
-2. **Run the script**, passing your port as a command-line argument:
-```bash
+### Option A: Command line (standalone script or CLI wrapper)
+
+1. **Identify your port:** check your OS Device Manager or terminal (e.g., `COM8` on Windows, `/dev/ttyUSB0` on Linux/macOS).
+2. **Run it:**
+   ```bash
    python standalone_run.py COM8
+   ```
+   or, equivalently, using the library-backed CLI:
+   ```bash
+   python run.py COM8
+   ```
+   *If no port is passed, both default to `COM8`.*
+
+Either produces the same two output files (see below).
+
+### Option B: As a library, in your own code
+
+```python
+from jeti_spectro import JetiSpectrometer, JetiError
+
+with JetiSpectrometer(port="COM8") as jeti:
+    wavelengths, intensities = jeti.measure()
+    jeti.save_csv(wavelengths, intensities, "measurement.csv")
+    jeti.plot(wavelengths, intensities, "spectrum.png")
 ```
-   *If no argument is passed, the script defaults to `COM8`.*
+
+`measure()` only returns the data — it does **not** write files on its own. Use `save_csv()` / `plot()` (or your own downstream analysis) as needed. Handshake failures, timeouts, and unparseable responses raise `JetiError`, so wrap calls in `try/except JetiError` for automated/unattended runs.
 
 ## Configuration Notes
 
-* **Data format:** The script sends `*meas:light 0 1 2` to trigger an auto-exposed light measurement. The trailing `2` requests **JETI Format 2** (tab-delimited ASCII rows). JETI instruments support other output formats (including binary); this script only implements Format 2. See your device's serial/remote command reference for the full list.
-* **Protocol source:** The command syntax and the handshake sequence (STX `\x02` / ACK `\x06` / BELL `\x07` / ETX `\x03`) follow JETI Technische Instrumente GmbH's serial command reference for the specbos/spectraval line. Consult your instrument's manual for the authoritative spec, as behavior may vary by firmware revision.
-* **Device compatibility:** Verified only on the **specbos 2501**. Other specbos models and the spectraval 15x1 are believed to share the same protocol family, but this has not been confirmed — check handshake behavior on your specific unit before relying on this for measurements. If using a **spectraval 15x1**, update `baudrate` inside `read_jeti_spectrum()` to `921600` (default here is `115200`, typical for specbos).
-* **Timeout limits:** A 10-second serial timeout is configured. If your measurement environment is very dark and requires long exposure integrations, increase the `timeout` parameter in the `serial.Serial` definition.
+* **Data format:** the library/scripts send `*meas:light 0 1 2` to trigger an auto-exposed light measurement. The trailing `2` requests **JETI Format 2** (tab-delimited ASCII rows). JETI instruments support other output formats (including binary); only Format 2 is implemented here. See your device's serial/remote command reference for the full list.
+* **Protocol source:** command syntax and the handshake sequence (STX `\x02` / ACK `\x06` / BELL `\x07` / ETX `\x03`) follow JETI Technische Instrumente GmbH's serial command reference for the specbos/spectraval line. Consult your instrument's manual for the authoritative spec, as behavior may vary by firmware revision.
+* **Device compatibility:** verified only on the **specbos 2501**. Other specbos models and the spectraval 15x1 are believed to share the same protocol family, but this has not been confirmed — check handshake behavior on your specific unit before relying on this for measurements.
+* **Baud rate:** defaults to `115200` (typical for specbos). For a **spectraval 15x1**, pass `baudrate=921600` to `JetiSpectrometer(...)`, or edit the constant in `standalone_run.py` if using the standalone script.
+* **Timeout limits:** a 10-second serial timeout is configured by default (`timeout` parameter). Increase it if your measurement environment is very dark and requires long exposure integrations.
 
 ## Output Files
 
-Upon a successful handshake and data read, two timestamped files are written to your working directory:
+When called via the CLI (`standalone_run.py` or `run.py`), two timestamped files are written to the working directory:
 
 * `measurement_YYYYMMDD_HHMMSS.csv` — `Wavelength (nm)` vs `Intensity`.
 * `spectrum_YYYYMMDD_HHMMSS.png` — an SPD line plot with 20 nm tick markers.
 
-**Units note:** `Intensity` reflects whatever the instrument returns for Format 2 output as configured (e.g. raw counts vs. calibrated irradiance depends on your device's calibration state). Confirm your instrument's calibration/output settings before treating these values as absolute radiometric quantities.
+When used as a library, file output is opt-in via `save_csv()` / `plot()`.
+
+**Units note:** `Intensity` reflects whatever the instrument returns for Format 2 output as configured — raw counts vs. calibrated irradiance depends on your device's calibration state. Confirm your instrument's calibration/output settings before treating these values as absolute radiometric quantities.
 
 ## License
 
-The Python script in this repository is licensed under the [MIT License](LICENSE). This covers the code only, i.e, it grants no rights to JETI's proprietary command protocol or hardware, and a JETI instrument is required to use this tool at all.
+The Python code in this repository is licensed under the [MIT License](LICENSE). This covers the code only — it grants no rights to JETI's proprietary command protocol or hardware, and a JETI instrument is required to use this tool at all.
